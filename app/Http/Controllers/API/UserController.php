@@ -31,6 +31,7 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        $userobj = new User();
         if($request->headers->get('Content-Type') == 'application/json') {
         $validator = \Validator::make($request->all(), 
         [
@@ -55,7 +56,7 @@ class UserController extends Controller
         ];
 
         // Check if email already exists or not
-        if(User::checIfEmailExists($request->email)) {    
+        if($userobj->checIfEmailExists($request->email)) {    
 
         $user = User::create($input);
         return [
