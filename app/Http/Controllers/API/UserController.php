@@ -86,7 +86,7 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        //
+        dd('This is to shows');
     }
 
     /**
