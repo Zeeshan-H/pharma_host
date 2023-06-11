@@ -23,6 +23,48 @@ class UserController extends Controller
         return response()->json($users, 200);
     }
 
+    public function login(Request $request) {
+
+        if($request->headers->get('Content-Type') == 'application/json') {
+        $user = User::where('email', '=', $request->email)
+        ->where('password', '=', $request->password)->first();
+
+
+        if($request->email == null) {
+            return [
+                'status' => 0,
+                'msg' => 'Email is required!'
+            ];
+        }
+        else if($request->password == null) {
+             return [
+                'status' => 0,
+                'msg' => 'Password is required!'
+            ];
+        }
+        else if($user == null) {
+           
+            return [
+                'status' => 0,
+                'msg' => 'Invalid Credentials!'
+            ];
+        }
+        else 
+        {
+            return [
+                'status' => 1,
+                'data' => $user
+            ];
+        }
+
+    }
+        
+        else 
+        {
+        return response()->json("Request header is missing", 500);
+        }
+    }
+
     /**
      * Store a newly created resource in storage.
      *
@@ -33,30 +75,64 @@ class UserController extends Controller
     {
         $userobj = new User();
         if($request->headers->get('Content-Type') == 'application/json') {
-        $validator = \Validator::make($request->all(), 
-        [
-            'name' => 'required',
-            'email' => 'required|email',
-            'password' => 'required'
-        ]
-    );
-        if($validator->fails()) {
-            $response = [
-                'status' => 0,
-                'error' => 'Validation error',
-                'message' => $validator->errors()
-            ];
-            return response()->json($response, 400);
-        }
-        else {
+    //     $validator = \Validator::make($request->all(), 
+    //     [
+    //         'name' => 'required',
+    //         'email' => 'required|email',
+    //         'password' => 'required'
+    //     ]
+    // );
+        // if($validator->fails()) {
+        //     $response = [
+        //         'status' => 0,
+        //         'error' => 'Validation error',
+        //         'message' => $validator->errors()
+        //     ];
+        //     return response()->json($response, 400);
+        // }
+        // else {
         $input = [
             'name' => $request->name,
             'email' => $request->email,
-            'password' => bcrypt($request->password)
+            'password' => $request->password
         ];
 
         // Check if email already exists or not
-        if($userobj->checIfEmailExists($request->email)) {    
+        if($request->email == '') {
+            return [
+                'status' => 0,
+                'msg' => 'Email is required!'
+            ];
+        }
+        else if($request->name == '') {
+            return [
+                'status' => 0,
+                'msg' => 'Name is required!'
+            ];
+        }
+
+        else if($request->password == '') {
+            return [
+                'status' => 0,
+                'msg' => 'Password is required!'
+            ];
+        }
+
+        else if(!filter_var($request->email, FILTER_VALIDATE_EMAIL)) {
+            return [
+                'status' => 0,
+                'msg' => 'Email is not valid!'
+            ];
+        }
+
+        else if($request->password != $request->confpassword) {
+            return [
+                'status' => 0,
+                'msg' => 'Passwords do not match!'
+            ];
+        }
+        
+        else if($userobj->checIfEmailExists($request->email)) {    
 
         $user = User::create($input);
         return [
@@ -71,7 +147,7 @@ class UserController extends Controller
             ];
         }
     }
-        }
+        
         else 
         {
         return response()->json("Request header is missing", 500);
